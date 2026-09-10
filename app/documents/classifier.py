@@ -38,8 +38,16 @@ def is_resume_like(text: str) -> bool:
 def is_jd_like(text: str, filename: str = "") -> bool:
     """Return whether the document has job-requirement evidence."""
     lowered = text.lower()
-    structured = "responsibilities" in lowered and any(
-        marker in lowered for marker in ("required skills", "qualifications", "requirements")
+    section_markers = (
+        "responsibilities", "requirements", "qualifications", "required skills",
+        "preferred skills", "what you will do", "what you bring", "job description",
+        "about the role", "duties", "key responsibilities", "must have",
+    )
+    matched_sections = sum(marker in lowered for marker in section_markers)
+    structured = matched_sections >= 2 or (
+        "responsibilities" in lowered and any(
+            marker in lowered for marker in ("required skills", "qualifications", "requirements")
+        )
     )
     filename_hint = filename.lower().replace("_", " ").replace("-", " ")
     named_as_jd = any(marker in filename_hint for marker in ("job description", "job", "jd", "vacancy", "role"))

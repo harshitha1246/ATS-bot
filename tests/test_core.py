@@ -55,6 +55,10 @@ def test_filename_hints_support_role_classification():
     assert not is_resume_like("Chapter 4: unit conversion and measurement")
     assert is_jd_like(JD, "job_description.pdf")
     assert not is_jd_like("Chapter 4: unit conversion and measurement", "unit_notes.pdf")
+    assert is_jd_like(
+        "Software Engineer\nAbout the role\nWhat you will do\nBuild services and collaborate with engineers.",
+        "role.pdf",
+    )
 
 
 def test_ambiguous_classification_asks_for_clarification():

@@ -74,7 +74,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     kind = classify_document_type(text, filename)
     expected_role = context.user_data.get("expected_role")
-    if expected_role == "jd" and kind != "jd":
+    if expected_role == "jd" and not is_jd_like(text, filename):
         context.user_data["pending_document"] = (filename, text, fingerprint)
         await update.message.reply_text(
             f"{filename} looks like a resume or another document, not a job description. Please upload a JD file.",

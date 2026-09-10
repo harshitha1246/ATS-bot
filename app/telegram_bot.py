@@ -294,24 +294,35 @@ async def unsupported_media(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 
 async def _send_results(update: Update, jd_name: str, result: dict) -> None:
-    lines = [f"JD identified: {jd_name}", "", "RANKING"]
+    lines = [f"ATS ANALYSIS", f"Job description: {jd_name}", "", "RANKING"]
     for item in result["ranking"]:
         lines.append(f"{item['rank']}. {item['resume']} - {item['score']}/100 ({item['alignment']})")
     for item in result["analyses"]:
         lines.extend([
-            "", f"RESUME ANALYSIS: {item['resume_name']}",
+            "", "=" * 28, f"RESUME: {item['resume_name']}", "=" * 28,
             f"ATS SCORE: {item['score']}/100",
             f"JD ALIGNMENT: {item['alignment_rating']} - {item['alignment_percentage']}%",
-            "MATCHED: " + (", ".join(item["matched_skills"]) or "None identified"),
-            "MISSING: " + (", ".join(item["missing_skills"]) or "None identified"),
-            "IMPORTANT GAPS: " + (", ".join(item["important_gaps"]) or "None identified"),
-            "WHY THESE GAPS: " + (" | ".join(item["gap_explanations"]) or "None identified"),
-            "SCORE BREAKDOWN: " + (", ".join(f"{name}={value}" for name, value in item["score_breakdown"].items()) or "Unavailable"),
-            "COURSES: " + (" | ".join(f"{course['title']} ({course['url']})" for course in item["course_links"]) or "None recommended"),
+            "", "MATCHED SKILLS", _numbered(item["matched_skills"]),
+            "", "MISSING SKILLS", _numbered(item["missing_skills"]),
+            "", "IMPORTANT GAPS", _numbered(item["gap_explanations"]),
+            "", "SCORE BREAKDOWN", _breakdown(item["score_breakdown"]),
+            "", "RECOMMENDED COURSES (MAX 4)", _courses(item["course_links"]),
         ])
     message = "\n".join(lines)
     for start in range(0, len(message), 3800):
         await update.effective_message.reply_text(message[start : start + 3800])
+
+
+def _numbered(items: list[str]) -> str:
+    return "\n".join(f"{index}. {item}" for index, item in enumerate(items, 1)) or "None identified"
+
+
+def _breakdown(items: dict[str, int]) -> str:
+    return "\n".join(f"- {name.replace('_', ' ').title()}: {value} points" for name, value in items.items()) or "Unavailable"
+
+
+def _courses(items: list[dict[str, str]]) -> str:
+    return "\n".join(f"{index}. {item['title']}\n   {item['url']}" for index, item in enumerate(items[:4], 1)) or "None recommended"
 
 
 def build_application() -> Application:

@@ -104,6 +104,11 @@ def test_analysis_explains_gaps_and_score_contributions():
     assert all(value >= 0 for value in result.score_breakdown.values())
 
 
+def test_course_recommendations_are_limited_to_four_links():
+    result = analyze_resume(parse_job_description(JD), "partial.txt", "2 years experience. Skills: Python")
+    assert len(result.course_links) <= 4
+
+
 def test_multiple_resume_analysis_is_ranked():
     analyses = analyze_documents(JD, [("strong.txt", RESUME), ("partial.txt", "2 years experience. Skills: Python, SQL")])
     assert [item.resume_name for item in analyses] == ["strong.txt", "partial.txt"]

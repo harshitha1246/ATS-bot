@@ -33,7 +33,7 @@ def recommend_courses(gaps: list[str]) -> list[str]:
             recommendations.append(COURSES[key])
         elif "years" not in key and "experience" not in key:
             recommendations.append(f"{gap.title()} Fundamentals")
-    return recommendations[:5]
+    return recommendations[:4]
 
 
 def course_link_details(gaps: list[str]) -> list[dict[str, str]]:
@@ -42,4 +42,4 @@ def course_link_details(gaps: list[str]) -> list[dict[str, str]]:
         key = next((name for name, title in COURSES.items() if title == course), None)
         if key and key in COURSE_LINKS:
             details.append({"title": course, "url": COURSE_LINKS[key]})
-    return details[:5]
+    return details[:4]

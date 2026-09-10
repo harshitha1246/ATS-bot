@@ -96,8 +96,11 @@ def test_matching_and_recommendations():
     assert "python" in [item.lower() for item in matched]
     assert "aws" in [item.lower() for item in matched]
     assert not important
-    assert recommend_courses(["Kubernetes"]) == ["Kubernetes for Developers"]
-    assert course_link_details(["AWS"])[0]["url"].startswith("https://")
+    assert recommend_courses(["Kubernetes"]) == ["Kubernetes Basics"]
+    course = course_link_details(["AWS"])[0]
+    assert course["provider"] == "AWS Skill Builder"
+    assert course["url"].startswith("https://")
+    assert course["reason"]
 
 
 def test_analysis_explains_gaps_and_score_contributions():
@@ -111,6 +114,10 @@ def test_analysis_explains_gaps_and_score_contributions():
 def test_course_recommendations_are_limited_to_four_links():
     result = analyze_resume(parse_job_description(JD), "partial.txt", "2 years experience. Skills: Python")
     assert len(result.course_links) <= 4
+
+
+def test_unknown_gaps_do_not_get_fake_course_links():
+    assert course_link_details(["Communication", "At least 3 years of experience"]) == []
 
 
 def test_multiple_resume_analysis_is_ranked():

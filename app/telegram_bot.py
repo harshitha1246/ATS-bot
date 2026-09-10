@@ -358,7 +358,10 @@ def _breakdown(items: dict[str, int]) -> str:
 
 
 def _courses(items: list[dict[str, str]]) -> str:
-    return "\n".join(f"{index}. {item['title']}\n   {item['url']}" for index, item in enumerate(items[:4], 1)) or "None recommended"
+    return "\n".join(
+        f"{index}. {item['title']} ({item['provider']})\n   Why: {item['reason']}\n   Link: {item['url']}"
+        for index, item in enumerate(items[:4], 1)
+    ) or "None recommended"
 
 
 def build_application() -> Application:

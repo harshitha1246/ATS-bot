@@ -1,45 +1,37 @@
-COURSES = {
-    "aws": "AWS Cloud Practitioner Fundamentals",
-    "azure": "Microsoft Azure Fundamentals",
-    "docker": "Docker and Container Fundamentals",
-    "kubernetes": "Kubernetes for Developers",
-    "python": "Python Programming Fundamentals",
-    "sql": "SQL for Data and Applications",
-    "react": "React Frontend Development",
-    "testing": "Automated Testing with Pytest",
-    "machine learning": "Practical Machine Learning Foundations",
-    "ci/cd": "CI/CD with GitHub Actions",
-}
-
-COURSE_LINKS = {
-    "aws": "https://skillbuilder.aws/",
-    "azure": "https://learn.microsoft.com/training/azure/",
-    "docker": "https://docs.docker.com/get-started/",
-    "kubernetes": "https://kubernetes.io/docs/tutorials/kubernetes-basics/",
-    "python": "https://docs.python.org/3/tutorial/",
-    "sql": "https://www.postgresql.org/docs/current/tutorial-sql.html",
-    "react": "https://react.dev/learn",
-    "testing": "https://docs.pytest.org/en/stable/getting-started.html",
-    "machine learning": "https://developers.google.com/machine-learning/crash-course",
-    "ci/cd": "https://docs.github.com/actions",
+COURSE_CATALOG = {
+    "aws": {"title": "AWS Cloud Practitioner Essentials", "provider": "AWS Skill Builder", "url": "https://skillbuilder.aws/", "reason": "Build foundational AWS cloud and deployment knowledge."},
+    "azure": {"title": "Azure Fundamentals", "provider": "Microsoft Learn", "url": "https://learn.microsoft.com/training/paths/azure-fundamentals-describe-cloud-concepts/", "reason": "Learn core Azure services and cloud concepts."},
+    "docker": {"title": "Get Started with Docker", "provider": "Docker Docs", "url": "https://docs.docker.com/get-started/", "reason": "Learn containers, images, and running applications with Docker."},
+    "kubernetes": {"title": "Kubernetes Basics", "provider": "Kubernetes Documentation", "url": "https://kubernetes.io/docs/tutorials/kubernetes-basics/", "reason": "Practice deploying and managing containerized applications."},
+    "python": {"title": "The Python Tutorial", "provider": "Python.org", "url": "https://docs.python.org/3/tutorial/", "reason": "Strengthen core Python syntax and programming concepts."},
+    "sql": {"title": "SQL Tutorial", "provider": "PostgreSQL Documentation", "url": "https://www.postgresql.org/docs/current/tutorial-sql.html", "reason": "Practice queries, joins, filtering, and relational data work."},
+    "react": {"title": "Learn React", "provider": "React Documentation", "url": "https://react.dev/learn", "reason": "Learn components, state, events, and modern React patterns."},
+    "testing": {"title": "Get Started with pytest", "provider": "pytest Documentation", "url": "https://docs.pytest.org/en/stable/getting-started.html", "reason": "Build a practical automated testing workflow in Python."},
+    "machine learning": {"title": "Machine Learning Crash Course", "provider": "Google for Developers", "url": "https://developers.google.com/machine-learning/crash-course", "reason": "Learn the core concepts behind practical machine learning."},
+    "ci/cd": {"title": "GitHub Actions Documentation", "provider": "GitHub Docs", "url": "https://docs.github.com/actions", "reason": "Learn how to automate build, test, and deployment workflows."},
 }
 
 
-def recommend_courses(gaps: list[str]) -> list[str]:
-    recommendations = []
-    for gap in gaps:
-        key = gap.lower()
-        if key in COURSES:
-            recommendations.append(COURSES[key])
-        elif "years" not in key and "experience" not in key:
-            recommendations.append(f"{gap.title()} Fundamentals")
-    return recommendations[:4]
+def _matching_key(gap: str) -> str | None:
+    normalized = gap.lower().strip()
+    for key in COURSE_CATALOG:
+        if normalized == key or key in normalized:
+            return key
+    return None
 
 
 def course_link_details(gaps: list[str]) -> list[dict[str, str]]:
     details = []
-    for course in recommend_courses(gaps):
-        key = next((name for name, title in COURSES.items() if title == course), None)
-        if key and key in COURSE_LINKS:
-            details.append({"title": course, "url": COURSE_LINKS[key]})
-    return details[:4]
+    seen = set()
+    for gap in gaps:
+        key = _matching_key(gap)
+        if key and key not in seen:
+            details.append(dict(COURSE_CATALOG[key]))
+            seen.add(key)
+        if len(details) == 4:
+            break
+    return details
+
+
+def recommend_courses(gaps: list[str]) -> list[str]:
+    return [item["title"] for item in course_link_details(gaps)]

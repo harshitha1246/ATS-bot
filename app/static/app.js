@@ -23,7 +23,7 @@ analyze.addEventListener('click', async () => {
 });
 function addMessage(text, kind) { const message = document.createElement('div'); message.className = `message ${kind}`; message.textContent = text; conversation.append(message); }
 function list(items) { return items.length ? `<ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p>None identified.</p>'; }
-function courseList(items) { return items.length ? `<ol>${items.slice(0, 4).map(item => `<li><a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></li>`).join('')}</ol>` : '<p>No targeted course found.</p>'; }
+function courseList(items) { return items.length ? `<ol>${items.slice(0, 4).map(item => `<li><a href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a><br><span class="mono">${escapeHtml(item.provider)}</span><br><span>${escapeHtml(item.reason)}</span></li>`).join('')}</ol>` : '<p>No targeted course found.</p>'; }
 function breakdown(items) { return `<ul>${Object.entries(items).map(([name, value]) => `<li>${escapeHtml(name.replaceAll('_', ' '))}: ${value} points</li>`).join('')}</ul>`; }
 function render(data) {
   results.hidden = false;

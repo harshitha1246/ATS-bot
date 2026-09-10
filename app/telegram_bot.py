@@ -84,25 +84,11 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             ]),
         )
         return
-    if expected_role == "resume" and kind != "resume":
+    if expected_role == "resume" and not is_resume_like(text):
         context.user_data["pending_document"] = (filename, text, fingerprint)
         await update.message.reply_text(
             f"{filename} does not look like a resume. Please upload a resume file.",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
-                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
-            ]),
-        )
-        return
-    if not context.user_data.get("jd") and not context.user_data.get("resumes"):
-        context.user_data["pending_document"] = (filename, text, fingerprint)
-        detected = "job description" if kind == "jd" else "resume" if kind == "resume" else "document"
-        hint = " The filename also suggests this role." if kind in {"jd", "resume"} else ""
-        await update.message.reply_text(
-            f"This looks like a {detected}.{hint} Please confirm what it is:",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("Use as JD", callback_data="mark_jd")],
-                [InlineKeyboardButton("Use as resume", callback_data="mark_resume")],
                 [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
                 [InlineKeyboardButton("Clear session", callback_data="clear_session")],
             ]),
@@ -163,6 +149,30 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             await _prompt_next(update, context)
         else:
             await query.edit_message_text("That file is already cleared. You can continue uploading.", reply_markup=_clear_markup())
+        return
+    if action in {"accept_pending_jd", "accept_pending_resume"}:
+        pending = context.user_data.get("pending_document")
+        if not pending:
+            await query.edit_message_text("That file is already cleared. You can continue uploading.", reply_markup=_clear_markup())
+            return
+        filename, text, fingerprint = pending
+        if action == "accept_pending_jd":
+            if not is_jd_like(text, filename):
+                await query.edit_message_text("This file still does not look like a JD. Please ignore it and upload a real JD.", reply_markup=_clear_markup())
+                return
+            context.user_data["jd"] = (filename, text)
+            message = f"Added {filename} as the JD."
+        else:
+            if not is_resume_like(text):
+                await query.edit_message_text("This file still does not look like a resume. Please ignore it and upload a real resume.", reply_markup=_clear_markup())
+                return
+            context.user_data.setdefault("resumes", []).append((filename, text))
+            message = f"Added {filename} as a resume."
+        context.user_data.pop("pending_document", None)
+        context.user_data.pop("expected_role", None)
+        context.user_data.setdefault("fingerprints", set()).add(fingerprint)
+        await query.edit_message_text(message)
+        await _prompt_next(update, context)
         return
     if action in {"mark_jd", "mark_resume"}:
         pending = context.user_data.get("pending_document")

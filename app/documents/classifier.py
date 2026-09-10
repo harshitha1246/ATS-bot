@@ -11,10 +11,15 @@ class ClassificationError(ValueError):
     pass
 
 
-def classify_document_type(text: str) -> str:
+def classify_document_type(text: str, filename: str = "") -> str:
+    filename_hint = filename.lower().replace("_", " ").replace("-", " ")
     lowered = text.lower()
     jd_score = _jd_score(text)
     resume_score = _resume_score(text)
+    if any(marker in filename_hint for marker in ("job description", "job", "jd", "vacancy", "role")):
+        jd_score += 3
+    if any(marker in filename_hint for marker in ("resume", "cv", "curriculum vitae", "candidate")):
+        resume_score += 3
     has_jd_structure = "responsibilities" in lowered and any(
         marker in lowered for marker in ("required skills", "qualifications", "requirements")
     )

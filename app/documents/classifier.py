@@ -27,6 +27,10 @@ def classify_documents(documents: list[tuple[str, str]]) -> ClassifiedDocuments:
             raise ClassificationError("I could not confidently identify the job description. Rename it with 'JD' or 'job', then try again.")
 
     resumes = [(filename, text) for filename, text, _ in scored if filename != best[0]]
+    unrelated = [filename for filename, text in resumes if _resume_score(text) < 2]
+    if unrelated:
+        names = ", ".join(unrelated)
+        raise ClassificationError(f"These file(s) do not look like resumes: {names}. Upload candidate resumes or remove them.")
     return ClassifiedDocuments(jd=(best[0], best[1]), resumes=resumes)
 
 
@@ -35,5 +39,14 @@ def _jd_score(text: str) -> int:
     markers = (
         "responsibilities", "requirements", "qualifications", "job description",
         "preferred", "required skills", "what you will do", "years of experience",
+    )
+    return sum(lowered.count(marker) for marker in markers)
+
+
+def _resume_score(text: str) -> int:
+    lowered = text.lower()
+    markers = (
+        "skills", "experience", "education", "employment", "work history",
+        "projects", "certifications", "objective", "resume", "curriculum vitae",
     )
     return sum(lowered.count(marker) for marker in markers)

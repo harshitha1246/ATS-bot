@@ -44,6 +44,14 @@ def test_ambiguous_classification_asks_for_clarification():
         assert True
 
 
+def test_unrelated_document_is_not_treated_as_resume():
+    try:
+        classify_documents([("role.txt", JD), ("unit_notes.pdf", "Chapter 4: unit conversion and measurement")])
+        assert False
+    except ClassificationError as error:
+        assert "do not look like resumes" in str(error)
+
+
 def test_matching_and_recommendations():
     jd = parse_job_description(JD)
     profile = parse_job_description(JD)

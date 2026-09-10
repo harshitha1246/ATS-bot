@@ -71,6 +71,14 @@ def test_jd_with_resume_like_words_is_still_a_jd():
     assert classify_document_type(jd_with_overlap, "role_document.pdf") == "jd"
 
 
+def test_required_and_preferred_skills_are_separated():
+    jd = parse_job_description(
+        "Backend Developer\nRequired Skills: Python, FastAPI, SQL\nPreferred Skills: AWS, Docker"
+    )
+    assert {item.name for item in jd.required_requirements} == {"python", "fastapi", "sql"}
+    assert {item.name for item in jd.preferred_requirements} == {"aws", "docker"}
+
+
 def test_ambiguous_classification_asks_for_clarification():
     try:
         classify_documents([("one.txt", "Python SQL"), ("two.txt", "Python SQL")])

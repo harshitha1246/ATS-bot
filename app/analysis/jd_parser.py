@@ -41,5 +41,8 @@ def _text_after_heading(text: str, headings: tuple[str, ...]) -> str:
     lines = text.splitlines()
     for index, line in enumerate(lines):
         if any(heading in line.lower() for heading in headings):
-            return "\n".join(lines[index + 1 :])
+            heading_end = line.find(":")
+            inline_content = line[heading_end + 1 :].strip() if heading_end >= 0 else ""
+            remaining = lines[index + 1 :]
+            return "\n".join(([inline_content] if inline_content else []) + remaining)
     return ""

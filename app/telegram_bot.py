@@ -119,6 +119,29 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await _prompt_next(update, context)
         return
 
+    if action == "manage_files":
+        await _show_file_manager(query, context)
+        return
+
+    if action == "remove_jd":
+        jd = context.user_data.pop("jd", None)
+        if jd:
+            context.user_data.setdefault("fingerprints", set()).discard(_fingerprint(jd[1]))
+        await query.edit_message_text("Removed the JD. Upload a new JD to continue.")
+        return
+
+    if action.startswith("remove_resume_"):
+        try:
+            index = int(action.rsplit("_", 1)[1])
+            resumes = context.user_data.get("resumes", [])
+            removed = resumes.pop(index)
+            context.user_data.setdefault("fingerprints", set()).discard(_fingerprint(removed[1]))
+            await query.edit_message_text(f"Removed {removed[0]}.")
+            await _prompt_next(update, context)
+        except (ValueError, IndexError):
+            await query.edit_message_text("That file is no longer available. Please use /files to see the current uploads.")
+        return
+
     if action == "analyze_now":
         await analyze(update, context)
     elif action == "add_resume":
@@ -140,8 +163,22 @@ async def _prompt_next(update: Update, context: ContextTypes.DEFAULT_TYPE, prefi
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Analyze now", callback_data="analyze_now")],
                 [InlineKeyboardButton("Add another resume", callback_data="add_resume")],
+                [InlineKeyboardButton("Remove a file", callback_data="manage_files")],
             ]),
         )
+
+
+async def _show_file_manager(query, context: ContextTypes.DEFAULT_TYPE) -> None:
+    buttons = []
+    if context.user_data.get("jd"):
+        buttons.append([InlineKeyboardButton("Remove JD", callback_data="remove_jd")])
+    for index, (filename, _) in enumerate(context.user_data.get("resumes", [])):
+        buttons.append([InlineKeyboardButton(f"Remove resume: {filename}", callback_data=f"remove_resume_{index}")])
+    if not buttons:
+        await query.edit_message_text("There are no uploaded files. Send a JD or resume to begin.")
+        return
+    buttons.append([InlineKeyboardButton("Keep files", callback_data="add_resume")])
+    await query.edit_message_text("Choose the file you want to remove:", reply_markup=InlineKeyboardMarkup(buttons))
 
 
 async def analyze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -166,6 +203,22 @@ async def analyze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     _reset(context)
     await update.message.reply_text("Cleared. Send one JD and one or more resumes to begin again.")
+
+
+async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not context.user_data.get("jd") and not context.user_data.get("resumes"):
+        await update.message.reply_text("No files uploaded yet.")
+        return
+    await update.message.reply_text("Choose a file to remove:", reply_markup=InlineKeyboardMarkup(_file_buttons(context)))
+
+
+def _file_buttons(context: ContextTypes.DEFAULT_TYPE) -> list[list[InlineKeyboardButton]]:
+    buttons = []
+    if context.user_data.get("jd"):
+        buttons.append([InlineKeyboardButton("Remove JD", callback_data="remove_jd")])
+    for index, (filename, _) in enumerate(context.user_data.get("resumes", [])):
+        buttons.append([InlineKeyboardButton(f"Remove resume: {filename}", callback_data=f"remove_resume_{index}")])
+    return buttons
 
 
 async def text_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -199,6 +252,7 @@ def build_application() -> Application:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("analyze", analyze))
     application.add_handler(CommandHandler("clear", clear))
+    application.add_handler(CommandHandler("files", files))
     application.add_handler(CallbackQueryHandler(handle_choice))
     application.add_handler(MessageHandler(filters.Document.ALL, receive_document))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_help))

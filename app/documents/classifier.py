@@ -30,6 +30,11 @@ def classify_document_type(text: str, filename: str = "") -> str:
     return "unknown"
 
 
+def is_resume_like(text: str) -> bool:
+    """Return whether the document has enough candidate-profile evidence."""
+    return _resume_score(text) >= 2 and _jd_score(text) < 2
+
+
 def classify_documents(documents: list[tuple[str, str]]) -> ClassifiedDocuments:
     if len(documents) < 2:
         raise ClassificationError("Upload one job description and at least one resume.")

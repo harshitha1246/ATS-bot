@@ -17,7 +17,7 @@ from telegram.ext import (
 from app.analysis.engine import analyze_documents
 from app.chat.response_formatter import format_results
 from app.config import MAX_UPLOAD_MB
-from app.documents.classifier import ClassificationError, classify_document_type, classify_documents
+from app.documents.classifier import ClassificationError, classify_document_type, classify_documents, is_resume_like
 from app.documents.text_extractor import DocumentExtractionError, extract_text
 
 load_dotenv()
@@ -132,6 +132,12 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         fingerprints = context.user_data.setdefault("fingerprints", set())
         if fingerprint in fingerprints:
             await query.edit_message_text("I already received that document. Please send a different file.", reply_markup=_clear_markup())
+            return
+        if action == "mark_resume" and not is_resume_like(text):
+            await query.edit_message_text(
+                f"I cannot accept {filename} as a resume because it does not contain enough candidate-profile information. Please upload a real resume.",
+                reply_markup=_clear_markup(),
+            )
             return
         if action == "mark_jd":
             if context.user_data.get("jd"):

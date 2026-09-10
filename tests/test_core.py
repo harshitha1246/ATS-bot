@@ -3,7 +3,7 @@ from app.analysis.jd_parser import parse_job_description
 from app.analysis.matcher import match_skills
 from app.analysis.engine import analyze_resume
 from app.analysis.recommender import course_link_details, recommend_courses
-from app.documents.classifier import ClassificationError, classify_document_type, classify_documents
+from app.documents.classifier import ClassificationError, classify_document_type, classify_documents, is_resume_like
 from app.documents.text_extractor import DocumentExtractionError, extract_text
 
 JD = """Backend Python Developer
@@ -51,6 +51,8 @@ def test_upload_order_does_not_define_document_role():
 def test_filename_hints_support_role_classification():
     assert classify_document_type(RESUME, "candidate_resume.pdf") == "resume"
     assert classify_document_type("Backend engineer with skills and experience", "Backend_JD.pdf") == "jd"
+    assert is_resume_like(RESUME)
+    assert not is_resume_like("Chapter 4: unit conversion and measurement")
 
 
 def test_ambiguous_classification_asks_for_clarification():

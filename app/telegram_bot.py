@@ -46,10 +46,10 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     filename = document.file_name or "uploaded_file"
     pending = context.user_data.get("pending_document")
     if pending:
-        await update.message.reply_text("Please choose whether the previous file is the JD or a resume before uploading another file.")
+        await update.message.reply_text("Please choose whether the previous file is the JD or a resume before uploading another file.", reply_markup=_clear_markup())
         return
     if document.file_size and document.file_size > MAX_UPLOAD_MB * 1024 * 1024:
-        await update.message.reply_text(f"{filename} is too large. The limit is {MAX_UPLOAD_MB} MB.")
+        await update.message.reply_text(f"{filename} is too large. The limit is {MAX_UPLOAD_MB} MB.", reply_markup=_clear_markup())
         return
     try:
         telegram_file = await context.bot.get_file(document.file_id)
@@ -57,16 +57,16 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await telegram_file.download_to_memory(content)
         text = extract_text(filename, content.getvalue())
     except DocumentExtractionError as exc:
-        await update.message.reply_text(f"I could not read {filename}: {exc}")
+        await update.message.reply_text(f"I could not read {filename}: {exc}", reply_markup=_clear_markup())
         return
     except Exception:
-        await update.message.reply_text(f"I could not download {filename}. Please try again.")
+        await update.message.reply_text(f"I could not download {filename}. Please try again.", reply_markup=_clear_markup())
         return
 
     fingerprint = _fingerprint(text)
     fingerprints = context.user_data.setdefault("fingerprints", set())
     if fingerprint in fingerprints or (pending and fingerprint == pending[2]):
-        await update.message.reply_text(f"I already received {filename}. Please send a different file.")
+        await update.message.reply_text(f"I already received {filename}. Please send a different file.", reply_markup=_clear_markup())
         return
 
     kind = classify_document_type(text, filename)
@@ -97,7 +97,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     if kind == "jd":
         if context.user_data.get("jd"):
-            await update.message.reply_text("I already have a JD. Please upload resumes only, or use /clear for another JD.")
+            await update.message.reply_text("I already have a JD. Please upload resumes only, or use /clear for another JD.", reply_markup=_clear_markup())
             return
         context.user_data["jd"] = (filename, text)
         fingerprints.add(fingerprint)
@@ -126,16 +126,16 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if action in {"mark_jd", "mark_resume"}:
         pending = context.user_data.pop("pending_document", None)
         if not pending:
-            await query.edit_message_text("That upload has expired. Please send the file again.")
+            await query.edit_message_text("That upload has expired. Please send the file again.", reply_markup=_clear_markup())
             return
         filename, text, fingerprint = pending
         fingerprints = context.user_data.setdefault("fingerprints", set())
         if fingerprint in fingerprints:
-            await query.edit_message_text("I already received that document. Please send a different file.")
+            await query.edit_message_text("I already received that document. Please send a different file.", reply_markup=_clear_markup())
             return
         if action == "mark_jd":
             if context.user_data.get("jd"):
-                await query.edit_message_text("I already have a JD. Use /clear before adding another one.")
+                await query.edit_message_text("I already have a JD. Use /clear before adding another one.", reply_markup=_clear_markup())
                 return
             context.user_data["jd"] = (filename, text)
             message = f"Added {filename} as the JD."
@@ -155,7 +155,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         jd = context.user_data.pop("jd", None)
         if jd:
             context.user_data.setdefault("fingerprints", set()).discard(_fingerprint(jd[1]))
-        await query.edit_message_text("Removed the JD. Upload a new JD to continue.")
+        await query.edit_message_text("Removed the JD. Upload a new JD to continue.", reply_markup=_clear_markup())
         return
 
     if action.startswith("remove_resume_"):
@@ -164,10 +164,10 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             resumes = context.user_data.get("resumes", [])
             removed = resumes.pop(index)
             context.user_data.setdefault("fingerprints", set()).discard(_fingerprint(removed[1]))
-            await query.edit_message_text(f"Removed {removed[0]}.")
+            await query.edit_message_text(f"Removed {removed[0]}.", reply_markup=_clear_markup())
             await _prompt_next(update, context)
         except (ValueError, IndexError):
-            await query.edit_message_text("That file is no longer available. Please use /files to see the current uploads.")
+            await query.edit_message_text("That file is no longer available. Please use /files to see the current uploads.", reply_markup=_clear_markup())
         return
 
     if action == "analyze_now":
@@ -257,7 +257,10 @@ async def analyze(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         classified = classify_documents(documents)
         analyses = analyze_documents(classified.jd[1], classified.resumes)
         await _send_results(update, classified.jd[0], format_results(analyses))
-        await update.effective_message.reply_text("Analysis complete. Use /clear for a new JD and new resumes.")
+        await update.effective_message.reply_text("Analysis complete. You can add more resumes, or clear the session for a new JD.", reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Add another resume", callback_data="add_resume")],
+            [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+        ]))
     except ClassificationError as exc:
         await update.effective_message.reply_text(str(exc))
 
@@ -286,11 +289,15 @@ def _file_buttons(context: ContextTypes.DEFAULT_TYPE) -> list[list[InlineKeyboar
 
 
 async def text_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Please upload the JD or resume as a PDF, DOCX, or TXT file. Use /analyze when ready or /clear to restart.")
+    await update.message.reply_text("Please upload the JD or resume as a PDF, DOCX, or TXT file. Use /analyze when ready or /clear to restart.", reply_markup=_clear_markup())
 
 
 async def unsupported_media(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Please send the document as a PDF, DOCX, or TXT file, not as a photo or video.")
+    await update.message.reply_text("Please send the document as a PDF, DOCX, or TXT file, not as a photo or video.", reply_markup=_clear_markup())
+
+
+def _clear_markup() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([[InlineKeyboardButton("Clear session", callback_data="clear_session")]])
 
 
 async def _send_results(update: Update, jd_name: str, result: dict) -> None:

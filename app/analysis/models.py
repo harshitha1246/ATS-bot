@@ -49,3 +49,6 @@ class ResumeAnalysis:
     explanation: str
     course_recommendations: list[str]
     skill_details: dict[str, list[str]]
+    gap_explanations: list[str] = field(default_factory=list)
+    score_breakdown: dict[str, int] = field(default_factory=dict)
+    course_links: list[dict[str, str]] = field(default_factory=list)

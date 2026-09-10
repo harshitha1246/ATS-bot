@@ -251,7 +251,9 @@ async def _send_results(update: Update, jd_name: str, result: dict) -> None:
             "MATCHED: " + (", ".join(item["matched_skills"]) or "None identified"),
             "MISSING: " + (", ".join(item["missing_skills"]) or "None identified"),
             "IMPORTANT GAPS: " + (", ".join(item["important_gaps"]) or "None identified"),
-            "COURSES: " + (", ".join(item["course_recommendations"]) or "None recommended"),
+            "WHY THESE GAPS: " + (" | ".join(item["gap_explanations"]) or "None identified"),
+            "SCORE BREAKDOWN: " + (", ".join(f"{name}={value}" for name, value in item["score_breakdown"].items()) or "Unavailable"),
+            "COURSES: " + (" | ".join(f"{course['title']} ({course['url']})" for course in item["course_links"]) or "None recommended"),
         ])
     message = "\n".join(lines)
     for start in range(0, len(message), 3800):

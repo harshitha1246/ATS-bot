@@ -8,6 +8,7 @@ Resume Matchroom is a small AI-ready chatbot application that compares one job d
 - Identifies the JD using document content, with filename fallback for ambiguous files.
 - Parses the JD once and reuses it for every resume.
 - Reports ATS score, matched skills, missing skills, JD alignment, prioritized gaps, and course recommendations.
+- Explains why each important gap matters, shows the score contribution by factor, and links targeted learning resources.
 - Ranks multiple resumes against the same JD.
 - Skips a failed resume without stopping the rest of the batch.
 

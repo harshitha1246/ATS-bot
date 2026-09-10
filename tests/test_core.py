@@ -1,7 +1,8 @@
 from app.analysis.engine import analyze_documents
 from app.analysis.jd_parser import parse_job_description
 from app.analysis.matcher import match_skills
-from app.analysis.recommender import recommend_courses
+from app.analysis.engine import analyze_resume
+from app.analysis.recommender import course_link_details, recommend_courses
 from app.documents.classifier import ClassificationError, classify_document_type, classify_documents
 from app.documents.text_extractor import DocumentExtractionError, extract_text
 
@@ -82,6 +83,15 @@ def test_matching_and_recommendations():
     assert "aws" in [item.lower() for item in matched]
     assert not important
     assert recommend_courses(["Kubernetes"]) == ["Kubernetes for Developers"]
+    assert course_link_details(["AWS"])[0]["url"].startswith("https://")
+
+
+def test_analysis_explains_gaps_and_score_contributions():
+    jd = parse_job_description(JD)
+    result = analyze_resume(jd, "partial.txt", "2 years experience. Skills: Python, SQL")
+    assert result.gap_explanations
+    assert result.score_breakdown
+    assert all(value >= 0 for value in result.score_breakdown.values())
 
 
 def test_multiple_resume_analysis_is_ranked():

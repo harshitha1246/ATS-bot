@@ -79,6 +79,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Use as JD", callback_data="mark_jd")],
                 [InlineKeyboardButton("Use as resume", callback_data="mark_resume")],
+                [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
                 [InlineKeyboardButton("Clear session", callback_data="clear_session")],
             ]),
         )
@@ -90,6 +91,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("This is the JD", callback_data="mark_jd")],
                 [InlineKeyboardButton("This is a resume", callback_data="mark_resume")],
+                [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
                 [InlineKeyboardButton("Clear session", callback_data="clear_session")],
             ]),
         )
@@ -123,8 +125,16 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         _reset(context)
         await query.edit_message_text("Cleared. Send one JD and one or more resumes to begin again.")
         return
-    if action in {"mark_jd", "mark_resume"}:
+    if action == "ignore_pending":
         pending = context.user_data.pop("pending_document", None)
+        if pending:
+            await query.edit_message_text(f"Ignored {pending[0]}. Your other uploaded files are kept.")
+            await _prompt_next(update, context)
+        else:
+            await query.edit_message_text("That file is already cleared. You can continue uploading.", reply_markup=_clear_markup())
+        return
+    if action in {"mark_jd", "mark_resume"}:
+        pending = context.user_data.get("pending_document")
         if not pending:
             await query.edit_message_text("That upload has expired. Please send the file again.", reply_markup=_clear_markup())
             return
@@ -136,15 +146,22 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         if action == "mark_resume" and not is_resume_like(text):
             await query.edit_message_text(
                 f"I cannot accept {filename} as a resume because it does not contain enough candidate-profile information. Please upload a real resume.",
-                reply_markup=_clear_markup(),
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
+                    [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+                ]),
             )
             return
         if action == "mark_jd" and not is_jd_like(text, filename):
             await query.edit_message_text(
                 f"I cannot accept {filename} as a job description because it does not contain clear role requirements or responsibilities. Please upload a real JD.",
-                reply_markup=_clear_markup(),
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
+                    [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+                ]),
             )
             return
+        context.user_data.pop("pending_document", None)
         if action == "mark_jd":
             if context.user_data.get("jd"):
                 await query.edit_message_text("I already have a JD. Use /clear before adding another one.", reply_markup=_clear_markup())

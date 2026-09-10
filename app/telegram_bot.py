@@ -417,7 +417,7 @@ async def _send_results(update: Update, jd_name: str, result: dict) -> None:
             "", "MISSING SKILLS", _numbered(item["missing_skills"]),
             "", "IMPORTANT GAPS", _numbered(item["gap_explanations"]),
             "", "SCORE BREAKDOWN", _breakdown(item["score_breakdown"]),
-            "", "RECOMMENDED COURSES (MAX 4)", _courses(item["course_links"]),
+            "", "RECOMMENDED COURSES", _courses(item["course_links"]),
         ])
     message = "\n".join(lines)
     for start in range(0, len(message), 3800):
@@ -435,7 +435,7 @@ def _breakdown(items: dict[str, int]) -> str:
 def _courses(items: list[dict[str, str]]) -> str:
     return "\n".join(
         f"{index}. {item['title']} ({item['provider']})\n   Why: {item['reason']}\n   Link: {item['url']}"
-        for index, item in enumerate(items[:4], 1)
+        for index, item in enumerate(items, 1)
     ) or "None recommended"
 
 

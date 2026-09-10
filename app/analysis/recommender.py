@@ -28,8 +28,6 @@ def course_link_details(gaps: list[str]) -> list[dict[str, str]]:
         if key and key not in seen:
             details.append(dict(COURSE_CATALOG[key]))
             seen.add(key)
-        if len(details) == 4:
-            break
     return details
 
 

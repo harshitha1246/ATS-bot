@@ -125,9 +125,10 @@ def test_analysis_explains_gaps_and_score_contributions():
     assert all(value >= 0 for value in result.score_breakdown.values())
 
 
-def test_course_recommendations_are_limited_to_four_links():
+def test_all_mapped_course_recommendations_are_returned():
     result = analyze_resume(parse_job_description(JD), "partial.txt", "2 years experience. Skills: Python")
-    assert len(result.course_links) <= 4
+    assert len(result.course_links) == len(result.course_recommendations)
+    assert len(result.course_links) >= 1
 
 
 def test_unknown_gaps_do_not_get_fake_course_links():

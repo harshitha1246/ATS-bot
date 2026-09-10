@@ -16,6 +16,7 @@ from telegram.ext import (
 
 from app.analysis.engine import analyze_documents
 from app.chat.response_formatter import format_results
+from app.config import MAX_UPLOAD_MB
 from app.documents.classifier import ClassificationError, classify_document_type, classify_documents
 from app.documents.text_extractor import DocumentExtractionError, extract_text
 
@@ -43,6 +44,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     document = update.message.document
     filename = document.file_name or "uploaded_file"
+    pending = context.user_data.get("pending_document")
+    if pending:
+        await update.message.reply_text("Please choose whether the previous file is the JD or a resume before uploading another file.")
+        return
+    if document.file_size and document.file_size > MAX_UPLOAD_MB * 1024 * 1024:
+        await update.message.reply_text(f"{filename} is too large. The limit is {MAX_UPLOAD_MB} MB.")
+        return
     try:
         telegram_file = await context.bot.get_file(document.file_id)
         content = BytesIO()
@@ -51,10 +59,12 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     except DocumentExtractionError as exc:
         await update.message.reply_text(f"I could not read {filename}: {exc}")
         return
+    except Exception:
+        await update.message.reply_text(f"I could not download {filename}. Please try again.")
+        return
 
     fingerprint = _fingerprint(text)
     fingerprints = context.user_data.setdefault("fingerprints", set())
-    pending = context.user_data.get("pending_document")
     if fingerprint in fingerprints or (pending and fingerprint == pending[2]):
         await update.message.reply_text(f"I already received {filename}. Please send a different file.")
         return
@@ -225,6 +235,10 @@ async def text_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Please upload the JD or resume as a PDF, DOCX, or TXT file. Use /analyze when ready or /clear to restart.")
 
 
+async def unsupported_media(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text("Please send the document as a PDF, DOCX, or TXT file, not as a photo or video.")
+
+
 async def _send_results(update: Update, jd_name: str, result: dict) -> None:
     lines = [f"JD identified: {jd_name}", "", "RANKING"]
     for item in result["ranking"]:
@@ -256,6 +270,7 @@ def build_application() -> Application:
     application.add_handler(CallbackQueryHandler(handle_choice))
     application.add_handler(MessageHandler(filters.Document.ALL, receive_document))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_help))
+    application.add_handler(MessageHandler(filters.PHOTO | filters.VIDEO | filters.AUDIO, unsupported_media))
     return application
 
 

@@ -64,6 +64,26 @@ py run_telegram.py
 
 Open the bot in Telegram, send one JD and one or more resume files, then send `/analyze`. Use `/clear` to reset the current chat. The Telegram adapter uses the same document extraction, classification, scoring, ranking, and recommendation engine as the browser interface.
 
+### Telegram edge cases
+
+The guided Telegram flow handles these cases explicitly:
+
+- No JD: asks the user to upload one.
+- No resume: asks the user to upload at least one.
+- Resume before JD: stores it and asks for the JD.
+- Uncertain document type: shows buttons to mark it as JD or resume.
+- Two JDs: rejects the second JD and keeps the current session.
+- Unrelated document: rejects it instead of analyzing it as a resume.
+- Duplicate document: detects the same extracted content even if the filename changes.
+- Duplicate uncertain document: does not replace the pending clarification.
+- Multiple resumes: offers `Analyze now` or `Add another resume`.
+- Wrong file type, empty file, corrupted file, or oversized file: returns a readable error.
+- Uploaded photo, video, or audio: asks for PDF, DOCX, or TXT instead.
+- Accidental text message: explains the expected file workflow.
+- Incorrect removal button after the list changed: returns a safe retry message.
+- Removing files: `/files` or `Remove a file` removes the JD or any selected resume and updates the session.
+- New analysis: `/clear` resets the chat-specific state.
+
 ## Test
 
 ```powershell

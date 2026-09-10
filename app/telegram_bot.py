@@ -78,6 +78,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Use as JD", callback_data="mark_jd")],
                 [InlineKeyboardButton("Use as resume", callback_data="mark_resume")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
             ]),
         )
         return
@@ -88,6 +89,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("This is the JD", callback_data="mark_jd")],
                 [InlineKeyboardButton("This is a resume", callback_data="mark_resume")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
             ]),
         )
         return
@@ -116,6 +118,10 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     query = update.callback_query
     await query.answer()
     action = query.data
+    if action == "clear_session":
+        _reset(context)
+        await query.edit_message_text("Cleared. Send one JD and one or more resumes to begin again.")
+        return
     if action in {"mark_jd", "mark_resume"}:
         pending = context.user_data.pop("pending_document", None)
         if not pending:
@@ -166,7 +172,13 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if action == "analyze_now":
         await analyze(update, context)
     elif action == "add_resume":
-        await query.edit_message_text("Okay. Upload another resume, or use /analyze when ready.")
+        await query.edit_message_text(
+            "Okay. Upload another resume, or use /analyze when ready.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Analyze now", callback_data="analyze_now")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+            ]),
+        )
 
 
 async def _prompt_next(update: Update, context: ContextTypes.DEFAULT_TYPE, prefix: str = "") -> None:
@@ -174,10 +186,14 @@ async def _prompt_next(update: Update, context: ContextTypes.DEFAULT_TYPE, prefi
     resumes = context.user_data.get("resumes", [])
     if not jd:
         text = f"{prefix} Now upload the JD." if prefix else "Please upload the JD."
-        await update.effective_message.reply_text(text)
+        await update.effective_message.reply_text(text, reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+        ]))
     elif not resumes:
         text = f"{prefix} Now upload at least one resume." if prefix else "Now upload at least one resume."
-        await update.effective_message.reply_text(text)
+        await update.effective_message.reply_text(text, reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+        ]))
     else:
         await update.effective_message.reply_text(
             f"{prefix} I have 1 JD and {len(resumes)} resume(s). What would you like to do?",
@@ -185,6 +201,7 @@ async def _prompt_next(update: Update, context: ContextTypes.DEFAULT_TYPE, prefi
                 [InlineKeyboardButton("Analyze now", callback_data="analyze_now")],
                 [InlineKeyboardButton("Add another resume", callback_data="add_resume")],
                 [InlineKeyboardButton("Remove a file", callback_data="manage_files")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
             ]),
         )
 
@@ -199,6 +216,7 @@ async def _show_file_manager(query, context: ContextTypes.DEFAULT_TYPE) -> None:
         await query.edit_message_text("There are no uploaded files. Send a JD or resume to begin.")
         return
     buttons.append([InlineKeyboardButton("Keep files", callback_data="add_resume")])
+    buttons.append([InlineKeyboardButton("Clear session", callback_data="clear_session")])
     await query.edit_message_text("Choose the file you want to remove:", reply_markup=InlineKeyboardMarkup(buttons))
 
 
@@ -230,7 +248,9 @@ async def files(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not context.user_data.get("jd") and not context.user_data.get("resumes"):
         await update.message.reply_text("No files uploaded yet.")
         return
-    await update.message.reply_text("Choose a file to remove:", reply_markup=InlineKeyboardMarkup(_file_buttons(context)))
+    buttons = _file_buttons(context)
+    buttons.append([InlineKeyboardButton("Clear session", callback_data="clear_session")])
+    await update.message.reply_text("Choose a file to remove:", reply_markup=InlineKeyboardMarkup(buttons))
 
 
 def _file_buttons(context: ContextTypes.DEFAULT_TYPE) -> list[list[InlineKeyboardButton]]:

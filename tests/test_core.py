@@ -52,6 +52,20 @@ def test_unrelated_document_is_not_treated_as_resume():
         assert "do not look like resumes" in str(error)
 
 
+def test_multiple_job_descriptions_are_rejected():
+    second_jd = """Frontend Developer
+    Responsibilities:
+    Build user interfaces.
+    Required Skills:
+    JavaScript and React.
+    """
+    try:
+        classify_documents([("backend_jd.txt", JD), ("frontend_jd.txt", second_jd)])
+        assert False
+    except ClassificationError as error:
+        assert "more than one possible job description" in str(error)
+
+
 def test_matching_and_recommendations():
     jd = parse_job_description(JD)
     profile = parse_job_description(JD)

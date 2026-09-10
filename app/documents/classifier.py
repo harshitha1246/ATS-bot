@@ -19,6 +19,8 @@ def classify_documents(documents: list[tuple[str, str]]) -> ClassifiedDocuments:
     scored.sort(key=lambda item: item[2], reverse=True)
     best = scored[0]
     second = scored[1]
+    if best[2] >= 2 and second[2] >= 2:
+        raise ClassificationError("I found more than one possible job description. Upload only one JD and then upload the resumes.")
     if best[2] == 0 or best[2] == second[2]:
         filename = next((name for name, _ in documents if "jd" in name.lower() or "job" in name.lower()), None)
         if filename:

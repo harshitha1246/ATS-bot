@@ -23,7 +23,9 @@ def classify_document_type(text: str, filename: str = "") -> str:
     has_jd_structure = "responsibilities" in lowered and any(
         marker in lowered for marker in ("required skills", "qualifications", "requirements")
     )
-    if has_jd_structure or (jd_score >= 2 and jd_score > resume_score):
+    if has_jd_structure:
+        return "jd"
+    if jd_score >= 2 and jd_score > resume_score:
         return "jd"
     if resume_score >= 2 and resume_score > jd_score:
         return "resume"

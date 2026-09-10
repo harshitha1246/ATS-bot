@@ -79,6 +79,10 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return
 
     kind = classify_document_type(text, filename)
+    if is_jd_like(text, filename) and not is_resume_like(text):
+        kind = "jd"
+    elif is_resume_like(text) and not is_jd_like(text, filename):
+        kind = "resume"
     expected_role = context.user_data.get("expected_role")
     if expected_role == "jd" and not is_jd_like(text, filename):
         context.user_data["pending_document"] = (filename, text, fingerprint)

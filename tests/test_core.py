@@ -61,6 +61,16 @@ def test_filename_hints_support_role_classification():
     )
 
 
+def test_jd_with_resume_like_words_is_still_a_jd():
+    jd_with_overlap = """Senior Python Developer
+    Job Description
+    Responsibilities: build and maintain APIs.
+    Requirements: Python, SQL, and 3 years of experience.
+    Skills: communication and testing.
+    """
+    assert classify_document_type(jd_with_overlap, "role_document.pdf") == "jd"
+
+
 def test_ambiguous_classification_asks_for_clarification():
     try:
         classify_documents([("one.txt", "Python SQL"), ("two.txt", "Python SQL")])

@@ -12,6 +12,11 @@ def analyze_resume(jd: JobDescription, filename: str, text: str) -> ResumeAnalys
     matched, missing, important = match_skills(jd, resume)
     score, factors = calculate_score(jd, resume, matched)
     gaps = prioritize_gaps(jd, resume, important)
+    recommendation_gaps = list(gaps)
+    if factors["experience"] < 1.0 and "Practical project experience" not in recommendation_gaps:
+        recommendation_gaps.append("Practical project experience")
+    if factors["responsibilities"] < 0.5 and "Responsibility practice" not in recommendation_gaps:
+        recommendation_gaps.append("Responsibility practice")
     gap_explanations = _explain_gaps(jd, gaps)
     alignment = round(score * 0.85 + factors["responsibilities"] * 15)
     rating = "High" if alignment >= 75 else "Medium" if alignment >= 55 else "Low"
@@ -24,11 +29,11 @@ def analyze_resume(jd: JobDescription, filename: str, text: str) -> ResumeAnalys
         alignment_percentage=alignment,
         alignment_rating=rating,
         explanation=_explain(rating, factors),
-        course_recommendations=recommend_courses(gaps),
+        course_recommendations=recommend_courses(recommendation_gaps),
         skill_details={"required": [item.name for item in jd.required_requirements], "preferred": [item.name for item in jd.preferred_requirements]},
         gap_explanations=gap_explanations,
         score_breakdown={name: round(factors[name] * weight * 100) for name, weight in WEIGHTS.items()},
-        course_links=course_link_details(gaps),
+        course_links=course_link_details(recommendation_gaps),
     )
 
 

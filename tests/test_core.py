@@ -135,6 +135,12 @@ def test_unknown_gaps_do_not_get_fake_course_links():
     assert course_link_details(["Communication", "At least 3 years of experience"]) == []
 
 
+def test_low_experience_score_gets_actionable_project_recommendation():
+    result = analyze_resume(parse_job_description(JD), "junior.txt", "Candidate\nSkills: Python")
+    assert result.score < 75
+    assert any("GitHub Skills" in item["title"] for item in result.course_links)
+
+
 def test_multiple_resume_analysis_is_ranked():
     analyses = analyze_documents(JD, [("strong.txt", RESUME), ("partial.txt", "2 years experience. Skills: Python, SQL")])
     assert [item.resume_name for item in analyses] == ["strong.txt", "partial.txt"]

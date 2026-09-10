@@ -9,6 +9,8 @@ COURSE_CATALOG = {
     "testing": {"title": "Get Started with pytest", "provider": "pytest Documentation", "url": "https://docs.pytest.org/en/stable/getting-started.html", "reason": "Build a practical automated testing workflow in Python."},
     "machine learning": {"title": "Machine Learning Crash Course", "provider": "Google for Developers", "url": "https://developers.google.com/machine-learning/crash-course", "reason": "Learn the core concepts behind practical machine learning."},
     "ci/cd": {"title": "GitHub Actions Documentation", "provider": "GitHub Docs", "url": "https://docs.github.com/actions", "reason": "Learn how to automate build, test, and deployment workflows."},
+    "practical project experience": {"title": "GitHub Skills: Introduction to GitHub", "provider": "GitHub Skills", "url": "https://skills.github.com/", "reason": "Build and publish a practical project that demonstrates hands-on experience."},
+    "responsibility practice": {"title": "GitHub Skills: Hello GitHub Actions", "provider": "GitHub Skills", "url": "https://skills.github.com/", "reason": "Practice a real delivery workflow aligned with the role's responsibilities."},
 }
 
 

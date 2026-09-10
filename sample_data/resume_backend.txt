@@ -1,0 +1,6 @@
+Alex Candidate
+Backend engineer with 4 years experience building Python services.
+
+Skills: Python, FastAPI, SQL, REST APIs, Docker, Git, Pytest, AWS
+Bachelor degree in Computer Science.
+Built and tested REST APIs and deployed Docker services to AWS for an agile team.

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resume Matchroom</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">ATS ANALYZER / CHAT WORKSPACE</p>
+      <h1>Find the resume that fits the role.</h1>
+      <p class="intro">Upload one job description and one or more resumes. The analyzer scores every candidate against the same role.</p>
+    </section>
+    <section class="panel">
+      <div class="upload-row">
+        <label class="dropzone"><span>Job description + resumes</span><input id="files" type="file" multiple accept=".pdf,.docx,.txt"><small>PDF, DOCX, or TXT</small></label>
+        <button id="analyze" type="button">Analyze files <span>↗</span></button>
+      </div>
+      <div id="file-list" class="file-list">No files selected yet.</div>
+    </section>
+    <section id="conversation" class="conversation" aria-live="polite">
+      <div class="message bot">Hi. I’m ready when you are. Add a JD and at least one resume to begin.</div>
+    </section>
+    <section id="results" hidden></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

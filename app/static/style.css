@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root { --ink:#202522; --paper:#f3f0e8; --lime:#c9ef72; --orange:#ee815b; --line:#c9c4b7; --muted:#6b706a; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:radial-gradient(circle at 15% 0%,#fffdf4 0 18%,transparent 42%), var(--paper); font-family:'Space Grotesk',sans-serif; }
+.shell { max-width:1050px; margin:0 auto; padding:52px 24px 80px; }
+.hero { max-width:720px; }
+.eyebrow { font:500 12px 'DM Mono',monospace; letter-spacing:1px; color:var(--orange); }
+h1 { font-size:clamp(40px,7vw,78px); line-height:.96; letter-spacing:-2px; margin:20px 0; max-width:780px; }
+.intro { color:var(--muted); max-width:560px; font-size:18px; line-height:1.5; }
+.panel { margin-top:42px; border:1px solid var(--ink); background:#fffdf5; padding:18px; box-shadow:8px 8px 0 var(--ink); }
+.upload-row { display:flex; gap:14px; align-items:stretch; }
+.dropzone { flex:1; border:1px dashed var(--ink); padding:18px; display:flex; flex-direction:column; gap:9px; cursor:pointer; }
+.dropzone span { font-weight:600; } .dropzone small { color:var(--muted); font-family:'DM Mono',monospace; font-size:11px; }
+input[type=file] { display:none; }
+button { border:1px solid var(--ink); background:var(--lime); color:var(--ink); padding:0 22px; font:600 15px 'Space Grotesk'; cursor:pointer; min-width:160px; } button:hover { background:var(--orange); }
+.file-list { padding:14px 2px 2px; color:var(--muted); font:12px 'DM Mono',monospace; }
+.conversation { margin-top:34px; display:grid; gap:12px; } .message { max-width:680px; padding:16px 18px; border:1px solid var(--line); line-height:1.5; } .message.bot { background:#e6ebdf; } .message.error { background:#ffe1d5; border-color:var(--orange); }
+#results { margin-top:26px; } .result-head { display:flex; justify-content:space-between; align-items:end; border-bottom:2px solid var(--ink); padding-bottom:12px; } .result-head h2 { margin:0; font-size:26px; } .ranking { display:grid; gap:8px; margin:18px 0 32px; } .rank { display:grid; grid-template-columns:45px 1fr 80px 90px; gap:10px; align-items:center; padding:13px 15px; background:#fffdf5; border:1px solid var(--line); } .rank strong { font-size:20px; } .mono { font:12px 'DM Mono',monospace; color:var(--muted); text-transform:uppercase; }
+.analysis { background:#fffdf5; border:1px solid var(--line); padding:22px; margin-top:18px; } .analysis h3 { margin:0 0 18px; font-size:22px; } .score { font-size:44px; font-weight:700; color:var(--orange); } .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:18px; margin-top:18px; } .block { border-top:2px solid var(--ink); padding-top:10px; } .block h4 { margin:0 0 8px; font:500 12px 'DM Mono',monospace; text-transform:uppercase; } ul { padding-left:20px; margin:6px 0; line-height:1.7; }
+@media (max-width:650px) { .shell{padding:30px 16px 50px} .upload-row,.grid{display:grid;grid-template-columns:1fr} button{min-height:52px} .rank{grid-template-columns:32px 1fr 55px;}.rank span:last-child{grid-column:2 / -1} }

@@ -1,0 +1,6 @@
+Jordan Candidate
+Software developer with 2 years experience.
+
+Skills: Python, SQL, Git, JavaScript
+Bachelor degree in Information Technology.
+Built internal tools and collaborated with product teams.

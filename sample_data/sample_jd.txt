@@ -1,0 +1,14 @@
+Backend Python Developer
+
+Responsibilities:
+- Build and maintain REST APIs using Python and FastAPI.
+- Write tests and collaborate with an agile engineering team.
+- Deploy services with Docker on AWS.
+
+Required Skills:
+Python, FastAPI, SQL, REST APIs, Docker, Git, Testing
+3+ years experience
+
+Preferred Skills:
+AWS, Kubernetes
+Bachelor degree in Computer Science or related field.

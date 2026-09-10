@@ -43,6 +43,11 @@ def test_single_document_role_classification():
     assert classify_document_type("Chapter 4: unit conversion and measurement") == "unknown"
 
 
+def test_upload_order_does_not_define_document_role():
+    assert classify_document_type(RESUME) == "resume"
+    assert classify_document_type(JD) == "jd"
+
+
 def test_ambiguous_classification_asks_for_clarification():
     try:
         classify_documents([("one.txt", "Python SQL"), ("two.txt", "Python SQL")])

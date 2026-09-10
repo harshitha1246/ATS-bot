@@ -35,6 +35,17 @@ def is_resume_like(text: str) -> bool:
     return _resume_score(text) >= 2 and _jd_score(text) < 2
 
 
+def is_jd_like(text: str, filename: str = "") -> bool:
+    """Return whether the document has job-requirement evidence."""
+    lowered = text.lower()
+    structured = "responsibilities" in lowered and any(
+        marker in lowered for marker in ("required skills", "qualifications", "requirements")
+    )
+    filename_hint = filename.lower().replace("_", " ").replace("-", " ")
+    named_as_jd = any(marker in filename_hint for marker in ("job description", "job", "jd", "vacancy", "role"))
+    return structured or _jd_score(text) >= 2 or (named_as_jd and _jd_score(text) >= 1)
+
+
 def classify_documents(documents: list[tuple[str, str]]) -> ClassifiedDocuments:
     if len(documents) < 2:
         raise ClassificationError("Upload one job description and at least one resume.")

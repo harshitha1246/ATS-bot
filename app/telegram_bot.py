@@ -68,7 +68,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if fingerprint in fingerprints or (pending and fingerprint == pending[2]):
         await update.message.reply_text(
             f"I already received {filename}. I ignored the duplicate. You can continue uploading.",
-            reply_markup=_duplicate_markup(),
+            reply_markup=_duplicate_markup(context),
         )
         return
 
@@ -152,8 +152,8 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         _reset(context)
         await query.edit_message_text("Cleared. Send one JD and one or more resumes to begin again.")
         return
-    if action == "continue_uploading":
-        await query.edit_message_text("Okay, duplicate ignored. Continue uploading your files.")
+    if action == "ignore_duplicate":
+        await query.edit_message_text("Duplicate ignored. You can continue uploading.")
         await _prompt_next(update, context)
         return
     if action == "ignore_pending":
@@ -172,7 +172,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         filename, text, fingerprint = pending
         fingerprints = context.user_data.setdefault("fingerprints", set())
         if fingerprint in fingerprints:
-            await query.edit_message_text("I ignored the duplicate document. You can continue uploading.", reply_markup=_duplicate_markup())
+            await query.edit_message_text("I ignored the duplicate document. You can continue uploading.", reply_markup=_duplicate_markup(context))
             return
         if action == "mark_resume" and not is_resume_like(text):
             await query.edit_message_text(
@@ -363,12 +363,13 @@ def _clear_markup() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[InlineKeyboardButton("Clear session", callback_data="clear_session")]])
 
 
-def _duplicate_markup() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("Ignore duplicate", callback_data="continue_uploading")],
-        [InlineKeyboardButton("Continue uploading", callback_data="continue_uploading")],
-        [InlineKeyboardButton("Clear session", callback_data="clear_session")],
-    ])
+def _duplicate_markup(context: ContextTypes.DEFAULT_TYPE) -> InlineKeyboardMarkup:
+    buttons = [[InlineKeyboardButton("Ignore file", callback_data="ignore_duplicate")]]
+    if not context.user_data.get("jd"):
+        buttons.append([InlineKeyboardButton("Add JD", callback_data="waiting_for_jd")])
+    buttons.append([InlineKeyboardButton("Add resume", callback_data="add_resume")])
+    buttons.append([InlineKeyboardButton("Clear session", callback_data="clear_session")])
+    return InlineKeyboardMarkup(buttons)
 
 
 async def _send_results(update: Update, jd_name: str, result: dict) -> None:

@@ -73,6 +73,27 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return
 
     kind = classify_document_type(text, filename)
+    expected_role = context.user_data.get("expected_role")
+    if expected_role == "jd" and kind != "jd":
+        context.user_data["pending_document"] = (filename, text, fingerprint)
+        await update.message.reply_text(
+            f"{filename} looks like a resume or another document, not a job description. Please upload a JD file.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+            ]),
+        )
+        return
+    if expected_role == "resume" and kind != "resume":
+        context.user_data["pending_document"] = (filename, text, fingerprint)
+        await update.message.reply_text(
+            f"{filename} does not look like a resume. Please upload a resume file.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Ignore this file", callback_data="ignore_pending")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+            ]),
+        )
+        return
     if not context.user_data.get("jd") and not context.user_data.get("resumes"):
         context.user_data["pending_document"] = (filename, text, fingerprint)
         detected = "job description" if kind == "jd" else "resume" if kind == "resume" else "document"
@@ -105,17 +126,20 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             await update.message.reply_text("I already have a JD. Please upload resumes only, or use /clear for another JD.", reply_markup=_clear_markup())
             return
         context.user_data["jd"] = (filename, text)
+        context.user_data.pop("expected_role", None)
         fingerprints.add(fingerprint)
         await _prompt_next(update, context, f"Added {filename} as the JD.")
         return
 
     if not context.user_data.get("jd"):
         context.user_data.setdefault("resumes", []).append((filename, text))
+        context.user_data.pop("expected_role", None)
         fingerprints.add(fingerprint)
         await _prompt_next(update, context, f"Added {filename} as a resume.")
         return
 
     context.user_data.setdefault("resumes", []).append((filename, text))
+    context.user_data.pop("expected_role", None)
     fingerprints.add(fingerprint)
     await _prompt_next(update, context, f"Added {filename} as a resume.")
 
@@ -178,6 +202,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         else:
             context.user_data.setdefault("resumes", []).append((filename, text))
             message = f"Added {filename} as a resume."
+        context.user_data.pop("expected_role", None)
         fingerprints.add(fingerprint)
         await query.edit_message_text(message)
         await _prompt_next(update, context)
@@ -209,6 +234,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if action == "analyze_now":
         await analyze(update, context)
     elif action == "add_resume":
+        context.user_data["expected_role"] = "resume"
         if context.user_data.get("jd"):
             prompt = "Okay. Upload another resume, or analyze when ready."
             buttons = [
@@ -225,6 +251,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             ]
         await query.edit_message_text(prompt, reply_markup=InlineKeyboardMarkup(buttons))
     elif action == "waiting_for_jd":
+        context.user_data["expected_role"] = "jd"
         await query.edit_message_text("Okay. Upload the JD file now.", reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("Add another resume", callback_data="add_resume")],
             [InlineKeyboardButton("Clear session", callback_data="clear_session")],

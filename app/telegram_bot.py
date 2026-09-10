@@ -107,7 +107,7 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if not context.user_data.get("jd"):
         context.user_data.setdefault("resumes", []).append((filename, text))
         fingerprints.add(fingerprint)
-        await update.message.reply_text(f"Added {filename} as a resume. Now upload the JD.")
+        await _prompt_next(update, context, f"Added {filename} as a resume.")
         return
 
     context.user_data.setdefault("resumes", []).append((filename, text))

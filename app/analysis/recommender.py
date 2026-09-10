@@ -9,8 +9,16 @@ COURSE_CATALOG = {
     "testing": {"title": "Get Started with pytest", "provider": "pytest Documentation", "url": "https://docs.pytest.org/en/stable/getting-started.html", "reason": "Build a practical automated testing workflow in Python."},
     "machine learning": {"title": "Machine Learning Crash Course", "provider": "Google for Developers", "url": "https://developers.google.com/machine-learning/crash-course", "reason": "Learn the core concepts behind practical machine learning."},
     "ci/cd": {"title": "GitHub Actions Documentation", "provider": "GitHub Docs", "url": "https://docs.github.com/actions", "reason": "Learn how to automate build, test, and deployment workflows."},
+    "tableau": {"title": "Tableau Training and Tutorials", "provider": "Tableau", "url": "https://www.tableau.com/learn/training", "reason": "Build dashboards and communicate insights with Tableau."},
+    "power bi": {"title": "Power BI Learning", "provider": "Microsoft Learn", "url": "https://learn.microsoft.com/training/powerplatform/power-bi/", "reason": "Learn data modeling, reports, and interactive Power BI dashboards."},
+    "javascript": {"title": "JavaScript Guide", "provider": "MDN Web Docs", "url": "https://developer.mozilla.org/docs/Web/JavaScript/Guide", "reason": "Strengthen practical JavaScript language and browser development skills."},
+    "typescript": {"title": "TypeScript Handbook", "provider": "TypeScript Documentation", "url": "https://www.typescriptlang.org/docs/handbook/intro.html", "reason": "Learn typed JavaScript for maintainable application development."},
+    "java": {"title": "Java Tutorials", "provider": "Dev.java", "url": "https://dev.java/learn/", "reason": "Build core Java programming and application development skills."},
+    "fastapi": {"title": "FastAPI Tutorial", "provider": "FastAPI Documentation", "url": "https://fastapi.tiangolo.com/tutorial/", "reason": "Learn how to build production-ready Python APIs with FastAPI."},
+    "django": {"title": "Django Tutorial", "provider": "Django Documentation", "url": "https://docs.djangoproject.com/en/stable/intro/tutorial01/", "reason": "Practice building web applications with Django."},
+    "pandas": {"title": "Getting Started with pandas", "provider": "pandas Documentation", "url": "https://pandas.pydata.org/docs/getting_started/intro_tutorials/", "reason": "Learn practical data cleaning and analysis with pandas."},
+    "spark": {"title": "Spark Quick Start", "provider": "Apache Spark Documentation", "url": "https://spark.apache.org/docs/latest/quick-start.html", "reason": "Practice distributed data processing with Apache Spark."},
     "practical project experience": {"title": "GitHub Skills: Introduction to GitHub", "provider": "GitHub Skills", "url": "https://skills.github.com/", "reason": "Build and publish a practical project that demonstrates hands-on experience."},
-    "responsibility practice": {"title": "GitHub Skills: Hello GitHub Actions", "provider": "GitHub Skills", "url": "https://skills.github.com/", "reason": "Practice a real delivery workflow aligned with the role's responsibilities."},
 }
 
 

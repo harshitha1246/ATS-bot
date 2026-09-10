@@ -15,8 +15,6 @@ def analyze_resume(jd: JobDescription, filename: str, text: str) -> ResumeAnalys
     recommendation_gaps = list(gaps)
     if factors["experience"] < 1.0 and "Practical project experience" not in recommendation_gaps:
         recommendation_gaps.append("Practical project experience")
-    if factors["responsibilities"] < 0.5 and "Responsibility practice" not in recommendation_gaps:
-        recommendation_gaps.append("Responsibility practice")
     gap_explanations = _explain_gaps(jd, gaps)
     alignment = round(score * 0.85 + factors["responsibilities"] * 15)
     rating = "High" if alignment >= 75 else "Medium" if alignment >= 55 else "Low"

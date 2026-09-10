@@ -149,6 +149,16 @@ def test_low_experience_score_gets_actionable_project_recommendation():
     assert any("GitHub Skills" in item["title"] for item in result.course_links)
 
 
+def test_recommendations_match_the_missing_role_skills():
+    jd = parse_job_description(
+        "Data Analyst\nResponsibilities: Analyze dashboards and communicate findings.\nRequired Skills: SQL, Tableau\n3+ years experience"
+    )
+    result = analyze_resume(jd, "analyst.txt", "Candidate\nSkills: SQL\n1 year experience")
+    titles = {item["title"] for item in result.course_links}
+    assert "Tableau Training and Tutorials" in titles
+    assert "GitHub Skills: Hello GitHub Actions" not in titles
+
+
 def test_multiple_resume_analysis_is_ranked():
     analyses = analyze_documents(JD, [("strong.txt", RESUME), ("partial.txt", "2 years experience. Skills: Python, SQL")])
     assert [item.resume_name for item in analyses] == ["strong.txt", "partial.txt"]

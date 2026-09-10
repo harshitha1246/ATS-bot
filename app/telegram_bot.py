@@ -57,10 +57,16 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await telegram_file.download_to_memory(content)
         text = extract_text(filename, content.getvalue())
     except DocumentExtractionError as exc:
-        await update.message.reply_text(f"I could not read {filename}: {exc}", reply_markup=_clear_markup())
+        await update.message.reply_text(
+            f"I could not read {filename}: {exc}",
+            reply_markup=_file_error_markup(),
+        )
         return
     except Exception:
-        await update.message.reply_text(f"I could not download {filename}. Please try again.", reply_markup=_clear_markup())
+        await update.message.reply_text(
+            f"I could not download {filename}. This may be a temporary Telegram or network problem.",
+            reply_markup=_file_error_markup(),
+        )
         return
 
     fingerprint = _fingerprint(text)
@@ -137,6 +143,10 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if action == "clear_session":
         _reset(context)
         await query.edit_message_text("Cleared. Send one JD and one or more resumes to begin again.")
+        return
+    if action in {"ignore_file_error", "continue_after_file_error"}:
+        await query.edit_message_text("File skipped. Your existing uploads are kept; you can send another file.")
+        await _prompt_next(update, context)
         return
     if action == "ignore_duplicate":
         await query.edit_message_text("Duplicate ignored. You can continue uploading.")
@@ -371,6 +381,14 @@ async def unsupported_media(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 def _clear_markup() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([[InlineKeyboardButton("Clear session", callback_data="clear_session")]])
+
+
+def _file_error_markup() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("Ignore file", callback_data="ignore_file_error")],
+        [InlineKeyboardButton("Continue uploading", callback_data="continue_after_file_error")],
+        [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+    ])
 
 
 def _duplicate_markup(context: ContextTypes.DEFAULT_TYPE) -> InlineKeyboardMarkup:

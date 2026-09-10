@@ -172,23 +172,45 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     if action == "analyze_now":
         await analyze(update, context)
     elif action == "add_resume":
-        await query.edit_message_text(
-            "Okay. Upload another resume, or use /analyze when ready.",
-            reply_markup=InlineKeyboardMarkup([
+        if context.user_data.get("jd"):
+            prompt = "Okay. Upload another resume, or analyze when ready."
+            buttons = [
                 [InlineKeyboardButton("Analyze now", callback_data="analyze_now")],
                 [InlineKeyboardButton("Clear session", callback_data="clear_session")],
-            ]),
-        )
+            ]
+        else:
+            count = len(context.user_data.get("resumes", []))
+            prompt = f"You have {count} resume(s). Upload the JD now, or add another resume first."
+            buttons = [
+                [InlineKeyboardButton("Upload JD", callback_data="waiting_for_jd")],
+                [InlineKeyboardButton("Add another resume", callback_data="add_resume")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+            ]
+        await query.edit_message_text(prompt, reply_markup=InlineKeyboardMarkup(buttons))
+    elif action == "waiting_for_jd":
+        await query.edit_message_text("Okay. Upload the JD file now.", reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Add another resume", callback_data="add_resume")],
+            [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+        ]))
 
 
 async def _prompt_next(update: Update, context: ContextTypes.DEFAULT_TYPE, prefix: str = "") -> None:
     jd = context.user_data.get("jd")
     resumes = context.user_data.get("resumes", [])
-    if not jd:
+    if not jd and not resumes:
         text = f"{prefix} Now upload the JD." if prefix else "Please upload the JD."
         await update.effective_message.reply_text(text, reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("Clear session", callback_data="clear_session")],
         ]))
+    elif not jd:
+        await update.effective_message.reply_text(
+            f"{prefix} I have {len(resumes)} resume(s). Upload the JD now, or add another resume first.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Upload JD", callback_data="waiting_for_jd")],
+                [InlineKeyboardButton("Add another resume", callback_data="add_resume")],
+                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
+            ]),
+        )
     elif not resumes:
         text = f"{prefix} Now upload at least one resume." if prefix else "Now upload at least one resume."
         await update.effective_message.reply_text(text, reply_markup=InlineKeyboardMarkup([

@@ -2,7 +2,7 @@ from app.analysis.engine import analyze_documents
 from app.analysis.jd_parser import parse_job_description
 from app.analysis.matcher import match_skills
 from app.analysis.recommender import recommend_courses
-from app.documents.classifier import ClassificationError, classify_documents
+from app.documents.classifier import ClassificationError, classify_document_type, classify_documents
 from app.documents.text_extractor import DocumentExtractionError, extract_text
 
 JD = """Backend Python Developer
@@ -34,6 +34,12 @@ def test_classification_uses_content():
     result = classify_documents([("candidate.txt", RESUME), ("role.txt", JD)])
     assert result.jd[0] == "role.txt"
     assert result.resumes[0][0] == "candidate.txt"
+
+
+def test_single_document_role_classification():
+    assert classify_document_type(JD) == "jd"
+    assert classify_document_type(RESUME) == "resume"
+    assert classify_document_type("Chapter 4: unit conversion and measurement") == "unknown"
 
 
 def test_ambiguous_classification_asks_for_clarification():

@@ -11,6 +11,20 @@ class ClassificationError(ValueError):
     pass
 
 
+def classify_document_type(text: str) -> str:
+    lowered = text.lower()
+    jd_score = _jd_score(text)
+    resume_score = _resume_score(text)
+    has_jd_structure = "responsibilities" in lowered and any(
+        marker in lowered for marker in ("required skills", "qualifications", "requirements")
+    )
+    if has_jd_structure or (jd_score >= 2 and jd_score > resume_score):
+        return "jd"
+    if resume_score >= 2 and resume_score > jd_score:
+        return "resume"
+    return "unknown"
+
+
 def classify_documents(documents: list[tuple[str, str]]) -> ClassifiedDocuments:
     if len(documents) < 2:
         raise ClassificationError("Upload one job description and at least one resume.")

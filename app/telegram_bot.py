@@ -70,19 +70,6 @@ async def receive_document(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return
 
     kind = classify_document_type(text, filename)
-    if not context.user_data.get("jd") and not context.user_data.get("resumes"):
-        context.user_data["pending_document"] = (filename, text, fingerprint)
-        detected = "job description" if kind == "jd" else "resume" if kind == "resume" else "document"
-        hint = " The filename also suggests this role." if kind in {"jd", "resume"} else ""
-        await update.message.reply_text(
-            f"This looks like a {detected}.{hint} Please confirm what it is:",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("Use as JD", callback_data="mark_jd")],
-                [InlineKeyboardButton("Use as resume", callback_data="mark_resume")],
-                [InlineKeyboardButton("Clear session", callback_data="clear_session")],
-            ]),
-        )
-        return
     if kind == "unknown":
         context.user_data["pending_document"] = (filename, text, fingerprint)
         await update.message.reply_text(

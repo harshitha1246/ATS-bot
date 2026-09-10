@@ -53,6 +53,11 @@ def test_filename_hints_support_role_classification():
     assert classify_document_type("Backend engineer with skills and experience", "Backend_JD.pdf") == "jd"
 
 
+def test_clear_role_signals_are_classified_without_confirmation():
+    assert classify_document_type(JD, "job_description.pdf") == "jd"
+    assert classify_document_type(RESUME, "candidate_resume.pdf") == "resume"
+
+
 def test_ambiguous_classification_asks_for_clarification():
     try:
         classify_documents([("one.txt", "Python SQL"), ("two.txt", "Python SQL")])
